@@ -27,12 +27,15 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -133,12 +136,20 @@ private fun EditorContent(
     val colors = MaterialTheme.colorScheme
     val typography = MaterialTheme.typography
     Column(modifier = modifier) {
+        val titleFocus = remember { FocusRequester() }
+        val bodyFocus = remember { FocusRequester() }
+        LaunchedEffect(Unit) { if (state.focusTitle) titleFocus.requestFocus() }
         PlainField(
             value = state.title,
-            onValueChange = viewModel::setTitle,
+            onValueChange = { value ->
+                viewModel.setTitle(value.replace("\n", ""))
+                if (value.contains('\n')) bodyFocus.requestFocus()
+            },
             placeholder = stringResource(R.string.title),
             style = typography.headlineSmall.copy(color = colors.onSurface),
             imeAction = ImeAction.Next,
+            onImeAction = { bodyFocus.requestFocus() },
+            modifier = Modifier.fillMaxWidth().focusRequester(titleFocus),
         )
         Spacer(Modifier.height(12.dp))
         PlainField(
@@ -146,7 +157,7 @@ private fun EditorContent(
             onValueChange = viewModel::setBody,
             placeholder = stringResource(R.string.note),
             style = typography.bodyLarge.copy(color = colors.onSurface),
-            modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+            modifier = Modifier.fillMaxWidth().focusRequester(bodyFocus).padding(bottom = 24.dp),
         )
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -171,7 +182,7 @@ private fun EditorContent(
         PlainField(
             value = newTag,
             onValueChange = { value ->
-                if (value.endsWith(' ') || value.endsWith(',')) {
+                if (value.endsWith(',')) {
                     viewModel.addCategory(value.dropLast(1))
                     newTag = ""
                 } else {
@@ -181,6 +192,7 @@ private fun EditorContent(
             placeholder = stringResource(R.string.add_tag),
             style = typography.bodyMedium.copy(color = colors.primary),
             singleLine = true,
+            capitalization = KeyboardCapitalization.None,
             imeAction = ImeAction.Done,
             onImeAction = {
                 viewModel.addCategory(newTag)
@@ -190,16 +202,21 @@ private fun EditorContent(
         )
         state.lastModified?.let {
             Spacer(Modifier.height(8.dp))
+            val now = System.currentTimeMillis()
             Text(
                 text =
-                    stringResource(
-                        R.string.edited_at,
-                        DateUtils.getRelativeTimeSpanString(
-                            it.toEpochMilli(),
-                            System.currentTimeMillis(),
-                            DateUtils.MINUTE_IN_MILLIS,
-                        ),
-                    ),
+                    if (now - it.toEpochMilli() < DateUtils.MINUTE_IN_MILLIS) {
+                        stringResource(R.string.edited_just_now)
+                    } else {
+                        stringResource(
+                            R.string.edited_at,
+                            DateUtils.getRelativeTimeSpanString(
+                                it.toEpochMilli(),
+                                now,
+                                DateUtils.MINUTE_IN_MILLIS,
+                            ),
+                        )
+                    },
                 style = typography.labelMedium,
                 color = colors.onSurfaceVariant,
             )
@@ -215,6 +232,7 @@ private fun PlainField(
     style: TextStyle,
     modifier: Modifier = Modifier.fillMaxWidth(),
     singleLine: Boolean = false,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
     imeAction: ImeAction = ImeAction.Default,
     onImeAction: () -> Unit = {},
 ) {
@@ -226,7 +244,8 @@ private fun PlainField(
         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
         keyboardOptions =
             KeyboardOptions(
-                capitalization = KeyboardCapitalization.Sentences,
+                capitalization = capitalization,
+                autoCorrectEnabled = capitalization != KeyboardCapitalization.None,
                 imeAction = imeAction,
             ),
         keyboardActions = KeyboardActions(onAny = { onImeAction() }),

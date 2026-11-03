@@ -67,7 +67,7 @@ class EntryRepository(
         )
     }
 
-    suspend fun save(entry: Entry): Long {
+    suspend fun save(entry: Entry, newRevision: Boolean = true): Long {
         val existing = if (entry.id == 0L) null else entries.getById(entry.id)?.toModel()
         if (existing != null && existing == entry) return entry.id
         val categories = entry.categories.map { it.trim() }.filter { it.isNotEmpty() }.distinct()
@@ -75,7 +75,8 @@ class EntryRepository(
             entry.copy(
                 categories = categories,
                 lastModified = clock.instant(),
-                sequence = if (existing == null) entry.sequence else existing.sequence + 1,
+                sequence =
+                    if (existing != null && newRevision) existing.sequence + 1 else entry.sequence,
             )
         return entries.save(saved.toEntity(), categories)
     }

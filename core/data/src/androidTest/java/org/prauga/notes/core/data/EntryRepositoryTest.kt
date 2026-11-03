@@ -60,6 +60,9 @@ class EntryRepositoryTest {
         repository.save(saved.copy(summary = "Renamed"))
         assertEquals(1, repository.getEntry(id)!!.sequence)
         assertEquals("Renamed", repository.getEntryByUid(entry.uid)!!.summary)
+
+        repository.save(repository.getEntry(id)!!.copy(summary = "Autosaved"), newRevision = false)
+        assertEquals(1, repository.getEntry(id)!!.sequence)
     }
 
     @Test

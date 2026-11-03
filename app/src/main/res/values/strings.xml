@@ -18,6 +18,7 @@
     <string name="note">Note</string>
     <string name="add_tag">Add tag</string>
     <string name="remove_tag">Remove tag %1$s</string>
+    <string name="edited_just_now">Edited just now</string>
     <string name="edited_at">Edited %1$s</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>

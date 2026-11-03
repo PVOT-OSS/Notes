@@ -29,6 +29,7 @@ data class NoteEditorUiState(
     val categories: List<String> = emptyList(),
     val lastModified: Instant? = null,
     val saved: Boolean = false,
+    val focusTitle: Boolean = false,
 )
 
 @OptIn(FlowPreview::class)
@@ -45,6 +46,7 @@ class NoteEditorViewModel(
     private val saveLock = Mutex()
     private var entry: Entry? = null
     private var deleted = false
+    private var revised = false
 
     init {
         viewModelScope.launch {
@@ -65,6 +67,7 @@ class NoteEditorViewModel(
                     categories = loaded.categories,
                     lastModified = loaded.lastModified.takeIf { loaded.id != 0L },
                     saved = loaded.id != 0L,
+                    focusTitle = loaded.id == 0L && loaded.isBlank(),
                 )
             if (loaded.id == 0L && !loaded.isBlank()) edits.emit(Unit)
         }
@@ -119,7 +122,8 @@ class NoteEditorViewModel(
                 )
             if (updated.id == 0L && updated.isBlank()) return@withLock
             if (updated.id != 0L && updated == base) return@withLock
-            val id = repository.save(updated)
+            val id = repository.save(updated, newRevision = !revised)
+            revised = true
             val stored = repository.getEntry(id) ?: return@withLock
             entry = stored
             _uiState.update { it.copy(lastModified = stored.lastModified, saved = true) }
