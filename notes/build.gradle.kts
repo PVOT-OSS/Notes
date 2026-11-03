@@ -18,12 +18,7 @@ android {
 
     buildTypes {
         debug { applicationIdSuffix = ".dev" }
-        release {
-            optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
-            }
-        }
+        release { optimization { enable = true } }
     }
 }
 
