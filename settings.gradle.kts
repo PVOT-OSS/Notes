@@ -30,4 +30,8 @@ rootProject.name = "Notes"
 
 include(":app")
 
+include(":core:model")
+
+include(":core:ical")
+
 includeBuild("PvotLib")
