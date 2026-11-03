@@ -10,7 +10,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,13 +40,22 @@ data class NoteListUiState(
     val loading: Boolean = true,
 )
 
-private data class ListControls(
+internal data class ListControls(
     val query: String = "",
     val searching: Boolean = false,
     val category: String? = null,
     val collection: Long? = null,
     val layout: NoteLayout = NoteLayout.GRID,
 )
+
+internal fun ListControls.dropMissing(
+    collectionIds: Set<Long>,
+    categories: Set<String>,
+): ListControls =
+    copy(
+        collection = collection?.takeIf { it in collectionIds },
+        category = category?.takeIf { it in categories },
+    )
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NoteListViewModel(
@@ -54,29 +65,42 @@ class NoteListViewModel(
 ) : ViewModel() {
     private val controls = MutableStateFlow(ListControls(layout = preferences.layout))
 
+    private val collections = repository.observeCollectionCounts(Component.VJOURNAL)
+    private val categories = repository.observeCategories(Component.VJOURNAL)
+
+    // A selected collection or tag can disappear (deleted collection, last note untagged); drop it
+    // then,
+    // or the query keeps filtering on something the UI no longer shows.
+    private val effectiveControls =
+        combine(controls, collections, categories) { controls, collections, categories ->
+            controls.dropMissing(
+                collections.map { it.id }.toSet(),
+                categories.map { it.name }.toSet(),
+            )
+        }
+
     val uiState: StateFlow<NoteListUiState> =
         combine(
-                controls,
-                controls.flatMapLatest {
-                    repository.observeEntries(
-                        Component.VJOURNAL,
+                effectiveControls,
+                effectiveControls
+                    .map {
                         EntryFilter(
                             collectionId = it.collection,
                             category = it.category,
                             query = it.query,
-                        ),
-                    )
-                },
-                repository.observeCategories(Component.VJOURNAL),
-                repository.observeCollectionCounts(Component.VJOURNAL),
+                        )
+                    }
+                    .distinctUntilChanged()
+                    .flatMapLatest { repository.observeEntries(Component.VJOURNAL, it) },
+                categories,
+                collections,
             ) { controls, notes, categories, collections ->
                 NoteListUiState(
                     notes = notes,
                     categories = categories.map { it.name },
                     selectedCategory = controls.category,
                     collections = collections,
-                    selectedCollection =
-                        controls.collection?.takeIf { id -> collections.any { it.id == id } },
+                    selectedCollection = controls.collection,
                     query = controls.query,
                     searching = controls.searching,
                     layout = controls.layout,
