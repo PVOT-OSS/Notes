@@ -43,6 +43,7 @@ import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.navigation.PvotTopBarAction
 import org.prauga.notes.R
 import org.prauga.notes.core.model.Entry
+import org.prauga.notes.core.ui.markdown.MarkdownText
 
 @Composable
 fun NoteListScreen(
@@ -184,12 +185,11 @@ private fun NoteCard(note: Entry, onClick: () -> Unit) {
             if (note.summary.isNotBlank() && note.description.isNotBlank())
                 Spacer(Modifier.height(6.dp))
             if (note.description.isNotBlank()) {
-                Text(
-                    text = note.description,
+                MarkdownText(
+                    markdown = note.description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 8,
-                    overflow = TextOverflow.Ellipsis,
+                    maxBlocks = 6,
                 )
             }
             if (note.categories.isNotEmpty()) {

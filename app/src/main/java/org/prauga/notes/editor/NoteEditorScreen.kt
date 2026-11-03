@@ -5,6 +5,7 @@ package org.prauga.notes.editor
 
 import android.content.Intent
 import android.text.format.DateUtils
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -52,6 +53,7 @@ import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.navigation.PvotTopBarAction
 import org.prauga.notes.R
+import org.prauga.notes.core.ui.markdown.MarkdownText
 
 @Composable
 fun NoteEditorScreen(viewModel: NoteEditorViewModel, onClose: () -> Unit) {
@@ -63,6 +65,15 @@ fun NoteEditorScreen(viewModel: NoteEditorViewModel, onClose: () -> Unit) {
     PvotScreenScaffold(
         topBar = {
             PvotTopBar(title = "", onBack = onClose) {
+                PvotTopBarAction(
+                    icon =
+                        painterResource(
+                            if (state.editing) R.drawable.ic_check else R.drawable.ic_edit
+                        ),
+                    contentDescription =
+                        stringResource(if (state.editing) R.string.done else R.string.edit),
+                    onClick = { viewModel.setEditing(!state.editing) },
+                )
                 PvotTopBarAction(
                     icon = painterResource(R.drawable.ic_share),
                     contentDescription = shareTitle,
@@ -138,27 +149,63 @@ private fun EditorContent(
     Column(modifier = modifier) {
         val titleFocus = remember { FocusRequester() }
         val bodyFocus = remember { FocusRequester() }
-        LaunchedEffect(Unit) { if (state.focusTitle) titleFocus.requestFocus() }
-        PlainField(
-            value = state.title,
-            onValueChange = { value ->
-                viewModel.setTitle(value.replace("\n", ""))
-                if (value.contains('\n')) bodyFocus.requestFocus()
-            },
-            placeholder = stringResource(R.string.title),
-            style = typography.headlineSmall.copy(color = colors.onSurface),
-            imeAction = ImeAction.Next,
-            onImeAction = { bodyFocus.requestFocus() },
-            modifier = Modifier.fillMaxWidth().focusRequester(titleFocus),
-        )
-        Spacer(Modifier.height(12.dp))
-        PlainField(
-            value = state.body,
-            onValueChange = viewModel::setBody,
-            placeholder = stringResource(R.string.note),
-            style = typography.bodyLarge.copy(color = colors.onSurface),
-            modifier = Modifier.fillMaxWidth().focusRequester(bodyFocus).padding(bottom = 24.dp),
-        )
+        var focusBody by remember { mutableStateOf(false) }
+        if (state.editing) {
+            LaunchedEffect(Unit) {
+                if (state.focusTitle) titleFocus.requestFocus()
+                if (focusBody) bodyFocus.requestFocus()
+                focusBody = false
+            }
+            PlainField(
+                value = state.title,
+                onValueChange = { value ->
+                    viewModel.setTitle(value.replace("\n", ""))
+                    if (value.contains('\n')) bodyFocus.requestFocus()
+                },
+                placeholder = stringResource(R.string.title),
+                style = typography.headlineSmall.copy(color = colors.onSurface),
+                imeAction = ImeAction.Next,
+                onImeAction = { bodyFocus.requestFocus() },
+                modifier = Modifier.fillMaxWidth().focusRequester(titleFocus),
+            )
+            Spacer(Modifier.height(12.dp))
+            PlainField(
+                value = state.body,
+                onValueChange = viewModel::setBody,
+                placeholder = stringResource(R.string.note),
+                style = typography.bodyLarge.copy(color = colors.onSurface),
+                modifier = Modifier.fillMaxWidth().focusRequester(bodyFocus).padding(bottom = 24.dp),
+            )
+        } else {
+            val startEditing = {
+                focusBody = true
+                viewModel.setEditing(true)
+            }
+            Column(
+                modifier =
+                    Modifier.fillMaxWidth()
+                        .clickable(
+                            interactionSource = null,
+                            indication = null,
+                            onClick = startEditing,
+                        )
+                        .padding(bottom = 24.dp)
+            ) {
+                if (state.title.isNotBlank()) {
+                    Text(state.title, style = typography.headlineSmall, color = colors.onSurface)
+                    Spacer(Modifier.height(12.dp))
+                }
+                if (state.body.isNotBlank()) {
+                    MarkdownText(markdown = state.body, onToggleTask = viewModel::toggleTask)
+                } else {
+                    Text(
+                        stringResource(R.string.note),
+                        style = typography.bodyLarge,
+                        color = colors.onSurfaceVariant.copy(alpha = 0.6f),
+                    )
+                }
+            }
+        }
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),

@@ -29,6 +29,7 @@ android {
 
 dependencies {
     implementation(project(":core:data"))
+    implementation(project(":core:ui"))
     implementation(libs.pvot.design.system)
     implementation(libs.pvot.core.ui)
     implementation(libs.androidx.navigation3.runtime)

@@ -6,6 +6,7 @@ package org.prauga.notes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavKey
@@ -64,6 +65,7 @@ fun NotesNavigation(request: NoteEditor?, onRequestHandled: () -> Unit) {
                                     key,
                                     container.defaultCollectionName,
                                     container.applicationScope,
+                                    createSavedStateHandle(),
                                 )
                             },
                         onClose = { backStack.removeLastOrNull() },
