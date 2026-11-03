@@ -1,7 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
      SPDX-FileCopyrightText: 2026 Saalim Quadri <danascape@gmail.com>
      SPDX-License-Identifier: Apache-2.0
 -->
 <resources>
     <string name="app_name">Notes</string>
+    <string name="default_collection">Notes</string>
+    <string name="new_note">New note</string>
+    <string name="search">Search</string>
+    <string name="search_notes">Search notes</string>
+    <string name="show_as_list">Show as list</string>
+    <string name="show_as_grid">Show as grid</string>
+    <string name="all_notes">All</string>
+    <string name="no_notes">No notes yet</string>
+    <string name="no_matching_notes">No matching notes</string>
+    <string name="title">Title</string>
+    <string name="note">Note</string>
+    <string name="add_tag">Add tag</string>
+    <string name="remove_tag">Remove tag %1$s</string>
+    <string name="edited_at">Edited %1$s</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete_note_title">Delete this note?</string>
+    <string name="delete_note_message">It will be removed from this device.</string>
 </resources>

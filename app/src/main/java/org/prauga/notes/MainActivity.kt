@@ -3,23 +3,44 @@
 
 package org.prauga.notes
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
-import androidx.compose.ui.Modifier
-import com.prauga.pvot.designsystem.components.PvotScreenScaffold
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.prauga.pvot.designsystem.platform.PvotBaseActivity
 import com.prauga.pvot.designsystem.theme.PvotAppTheme
 
 class MainActivity : PvotBaseActivity() {
+    private var request by mutableStateOf<NoteEditor?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) request = intent.toEditorRequest()
         setPvotContent {
             PvotAppTheme {
-                PvotScreenScaffold { padding ->
-                    Text(text = getString(R.string.app_name), modifier = Modifier.padding(padding))
-                }
+                NotesNavigation(request = request, onRequestHandled = { request = null })
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        request = intent.toEditorRequest()
+    }
+
+    private fun Intent.toEditorRequest(): NoteEditor? =
+        when (action) {
+            ACTION_NEW_NOTE -> NoteEditor()
+            Intent.ACTION_SEND ->
+                NoteEditor(
+                    title = getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(),
+                    text = getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString().orEmpty(),
+                )
+            else -> null
+        }
+
+    companion object {
+        const val ACTION_NEW_NOTE = "org.prauga.notes.action.NEW_NOTE"
     }
 }
