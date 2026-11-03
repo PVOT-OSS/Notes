@@ -33,6 +33,22 @@
     <string name="color_blue">Blue</string>
     <string name="color_purple">Purple</string>
     <string name="color_pink">Pink</string>
+    <string name="collections">Collections</string>
+    <string name="all_collections">All</string>
+    <string name="collection">Collection</string>
+    <string name="new_collection">New collection</string>
+    <string name="edit_collection">Edit collection</string>
+    <string name="collection_name">Name</string>
+    <string name="save">Save</string>
+    <string name="delete_collection_title">Delete %1$s?</string>
+    <plurals name="note_count">
+        <item quantity="one">%d note</item>
+        <item quantity="other">%d notes</item>
+    </plurals>
+    <plurals name="delete_collection_message">
+        <item quantity="one">Its %d note will be deleted too.</item>
+        <item quantity="other">Its %d notes will be deleted too.</item>
+    </plurals>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>

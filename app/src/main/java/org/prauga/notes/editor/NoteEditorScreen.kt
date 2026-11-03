@@ -7,6 +7,7 @@ import android.content.Intent
 import android.text.format.DateUtils
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -23,6 +24,9 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.MaterialTheme
@@ -56,6 +60,7 @@ import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.navigation.PvotTopBarAction
 import org.prauga.notes.NoteColorRow
 import org.prauga.notes.R
+import org.prauga.notes.core.model.EntryCollection
 import org.prauga.notes.core.ui.markdown.MarkdownText
 
 @Composable
@@ -228,6 +233,14 @@ private fun EditorContent(
                 )
             }
         }
+        if (state.collections.size > 1) {
+            CollectionPicker(
+                collections = state.collections,
+                selected = state.collectionId,
+                onSelect = viewModel::setCollection,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
         NoteColorRow(
             selected = state.color,
             onSelect = viewModel::setColor,
@@ -348,4 +361,42 @@ private fun PlainField(
             inner()
         },
     )
+}
+
+@Composable
+private fun CollectionPicker(
+    collections: List<EntryCollection>,
+    selected: Long,
+    onSelect: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val current = collections.firstOrNull { it.id == selected }
+    Box(modifier) {
+        AssistChip(
+            onClick = { expanded = true },
+            label = { Text(current?.name.orEmpty()) },
+            leadingIcon = {
+                Icon(painterResource(R.drawable.ic_folder), null, Modifier.size(18.dp))
+            },
+            trailingIcon = {
+                Icon(
+                    painterResource(R.drawable.ic_arrow_drop_down),
+                    stringResource(R.string.collection),
+                    Modifier.size(18.dp),
+                )
+            },
+        )
+        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            collections.forEach { collection ->
+                DropdownMenuItem(
+                    text = { Text(collection.name) },
+                    onClick = {
+                        onSelect(collection.id)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
 }

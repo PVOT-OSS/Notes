@@ -19,7 +19,7 @@ SPDX-FileCopyrightText = "2007-2023 Gradle, Inc."
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = ["app/src/main/res/drawable/ic_add.xml", "app/src/main/res/drawable/ic_close.xml", "app/src/main/res/drawable/ic_check.xml", "app/src/main/res/drawable/ic_delete.xml", "app/src/main/res/drawable/ic_edit.xml", "app/src/main/res/drawable/ic_grid_view.xml", "app/src/main/res/drawable/ic_search.xml", "app/src/main/res/drawable/ic_share.xml", "app/src/main/res/drawable/ic_shortcut_new_note.xml", "app/src/main/res/drawable/ic_view_list.xml"]
+path = ["app/src/main/res/drawable/ic_add.xml", "app/src/main/res/drawable/ic_arrow_drop_down.xml", "app/src/main/res/drawable/ic_folder.xml", "app/src/main/res/drawable/ic_close.xml", "app/src/main/res/drawable/ic_check.xml", "app/src/main/res/drawable/ic_delete.xml", "app/src/main/res/drawable/ic_edit.xml", "app/src/main/res/drawable/ic_grid_view.xml", "app/src/main/res/drawable/ic_search.xml", "app/src/main/res/drawable/ic_share.xml", "app/src/main/res/drawable/ic_shortcut_new_note.xml", "app/src/main/res/drawable/ic_view_list.xml"]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "Google LLC (Material Icons)"
 SPDX-License-Identifier = "Apache-2.0"

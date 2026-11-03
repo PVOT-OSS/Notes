@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
@@ -21,6 +22,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,7 +61,8 @@ import org.prauga.notes.noteContainerColor
 fun NoteListScreen(
     viewModel: NoteListViewModel,
     onOpenNote: (Long) -> Unit,
-    onNewNote: () -> Unit,
+    onNewNote: (Long?) -> Unit,
+    onOpenCollections: () -> Unit,
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     BackHandler(enabled = state.searching) { viewModel.setSearching(false) }
@@ -67,6 +70,11 @@ fun NoteListScreen(
     PvotScreenScaffold(
         topBar = {
             PvotTopBar(title = stringResource(R.string.app_name)) {
+                PvotTopBarAction(
+                    icon = painterResource(R.drawable.ic_folder),
+                    contentDescription = stringResource(R.string.collections),
+                    onClick = onOpenCollections,
+                )
                 PvotTopBarAction(
                     icon = painterResource(R.drawable.ic_search),
                     contentDescription = stringResource(R.string.search),
@@ -90,7 +98,7 @@ fun NoteListScreen(
         floatingAction = {
             PvotFab(
                 icon = painterResource(R.drawable.ic_add),
-                onClick = onNewNote,
+                onClick = { onNewNote(state.selectedCollection) },
                 contentDescription = stringResource(R.string.new_note),
                 text = stringResource(R.string.new_note),
             )
@@ -138,6 +146,38 @@ private fun NoteListContent(
         }
         if (!state.searching) {
             item(span = StaggeredGridItemSpan.FullLine) { QuickAdd(onAdd = viewModel::quickAdd) }
+        }
+        if (state.collections.size > 1) {
+            item(span = StaggeredGridItemSpan.FullLine) {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    item {
+                        FilterChip(
+                            selected = state.selectedCollection == null,
+                            onClick = { viewModel.selectCollection(null) },
+                            label = { Text(stringResource(R.string.all_collections)) },
+                            leadingIcon = {
+                                Icon(
+                                    painterResource(R.drawable.ic_folder),
+                                    null,
+                                    Modifier.size(16.dp),
+                                )
+                            },
+                        )
+                    }
+                    items(state.collections, key = { it.id }) { collection ->
+                        FilterChip(
+                            selected = state.selectedCollection == collection.id,
+                            onClick = {
+                                viewModel.selectCollection(
+                                    if (state.selectedCollection == collection.id) null
+                                    else collection.id
+                                )
+                            },
+                            label = { Text(collection.name) },
+                        )
+                    }
+                }
+            }
         }
         if (state.categories.isNotEmpty()) {
             item(span = StaggeredGridItemSpan.FullLine) {

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.prauga.notes.NotesPreferences
+import org.prauga.notes.core.data.CollectionCount
 import org.prauga.notes.core.data.EntryFilter
 import org.prauga.notes.core.data.EntryRepository
 import org.prauga.notes.core.model.Component
@@ -29,6 +30,8 @@ data class NoteListUiState(
     val notes: List<Entry> = emptyList(),
     val categories: List<String> = emptyList(),
     val selectedCategory: String? = null,
+    val collections: List<CollectionCount> = emptyList(),
+    val selectedCollection: Long? = null,
     val query: String = "",
     val searching: Boolean = false,
     val layout: NoteLayout = NoteLayout.GRID,
@@ -39,6 +42,7 @@ private data class ListControls(
     val query: String = "",
     val searching: Boolean = false,
     val category: String? = null,
+    val collection: Long? = null,
     val layout: NoteLayout = NoteLayout.GRID,
 )
 
@@ -56,15 +60,23 @@ class NoteListViewModel(
                 controls.flatMapLatest {
                     repository.observeEntries(
                         Component.VJOURNAL,
-                        EntryFilter(category = it.category, query = it.query),
+                        EntryFilter(
+                            collectionId = it.collection,
+                            category = it.category,
+                            query = it.query,
+                        ),
                     )
                 },
                 repository.observeCategories(Component.VJOURNAL),
-            ) { controls, notes, categories ->
+                repository.observeCollectionCounts(Component.VJOURNAL),
+            ) { controls, notes, categories, collections ->
                 NoteListUiState(
                     notes = notes,
                     categories = categories.map { it.name },
                     selectedCategory = controls.category,
+                    collections = collections,
+                    selectedCollection =
+                        controls.collection?.takeIf { id -> collections.any { it.id == id } },
                     query = controls.query,
                     searching = controls.searching,
                     layout = controls.layout,
@@ -77,9 +89,11 @@ class NoteListViewModel(
         val title = text.trim()
         if (title.isEmpty()) return
         viewModelScope.launch {
-            val collection = repository.defaultCollection(defaultCollectionName)
+            val collectionId =
+                uiState.value.selectedCollection
+                    ?: repository.defaultCollection(defaultCollectionName).id
             repository.save(
-                repository.newEntry(Component.VJOURNAL, collection.id).copy(summary = title)
+                repository.newEntry(Component.VJOURNAL, collectionId).copy(summary = title)
             )
         }
     }
@@ -88,6 +102,8 @@ class NoteListViewModel(
 
     fun setSearching(searching: Boolean) =
         controls.update { it.copy(searching = searching, query = if (searching) it.query else "") }
+
+    fun selectCollection(collection: Long?) = controls.update { it.copy(collection = collection) }
 
     fun selectCategory(category: String?) = controls.update { it.copy(category = category) }
 

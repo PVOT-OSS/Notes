@@ -15,6 +15,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import kotlinx.serialization.Serializable
+import org.prauga.notes.collections.CollectionsScreen
+import org.prauga.notes.collections.CollectionsViewModel
 import org.prauga.notes.editor.NoteEditorScreen
 import org.prauga.notes.editor.NoteEditorViewModel
 import org.prauga.notes.list.NoteListScreen
@@ -23,7 +25,14 @@ import org.prauga.notes.list.NoteListViewModel
 @Serializable data object NoteList : NavKey
 
 @Serializable
-data class NoteEditor(val id: Long = 0, val title: String = "", val text: String = "") : NavKey
+data class NoteEditor(
+    val id: Long = 0,
+    val title: String = "",
+    val text: String = "",
+    val collectionId: Long = 0,
+) : NavKey
+
+@Serializable data object Collections : NavKey
 
 @Composable
 fun NotesNavigation(request: NoteEditor?, onRequestHandled: () -> Unit) {
@@ -59,7 +68,14 @@ fun NotesNavigation(request: NoteEditor?, onRequestHandled: () -> Unit) {
                                 )
                             },
                         onOpenNote = { backStack.add(NoteEditor(id = it)) },
-                        onNewNote = { backStack.add(NoteEditor()) },
+                        onNewNote = { backStack.add(NoteEditor(collectionId = it ?: 0)) },
+                        onOpenCollections = { backStack.add(Collections) },
+                    )
+                }
+                entry<Collections> {
+                    CollectionsScreen(
+                        viewModel = viewModel { CollectionsViewModel(repository) },
+                        onBack = { backStack.removeLastOrNull() },
                     )
                 }
                 entry<NoteEditor> { key ->

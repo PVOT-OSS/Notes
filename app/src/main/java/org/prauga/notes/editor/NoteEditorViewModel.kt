@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -23,6 +24,7 @@ import org.prauga.notes.NoteEditor
 import org.prauga.notes.core.data.EntryRepository
 import org.prauga.notes.core.model.Component
 import org.prauga.notes.core.model.Entry
+import org.prauga.notes.core.model.EntryCollection
 import org.prauga.notes.core.ui.markdown.MarkdownParser
 
 data class NoteEditorUiState(
@@ -31,6 +33,8 @@ data class NoteEditorUiState(
     val body: String = "",
     val categories: List<String> = emptyList(),
     val color: Int? = null,
+    val collectionId: Long = 0,
+    val collections: List<EntryCollection> = emptyList(),
     val lastModified: Instant? = null,
     val saved: Boolean = false,
     val focusTitle: Boolean = false,
@@ -61,7 +65,7 @@ class NoteEditorViewModel(
                     ?: repository
                         .newEntry(
                             Component.VJOURNAL,
-                            repository.defaultCollection(defaultCollectionName).id,
+                            initialCollection(key.collectionId, defaultCollectionName),
                         )
                         .copy(summary = key.title, description = key.text)
             entry = loaded
@@ -72,12 +76,19 @@ class NoteEditorViewModel(
                     body = loaded.description,
                     categories = loaded.categories,
                     color = loaded.color,
+                    collectionId = loaded.collectionId,
+                    collections = _uiState.value.collections,
                     lastModified = loaded.lastModified.takeIf { loaded.id != 0L },
                     saved = loaded.id != 0L,
                     focusTitle = loaded.id == 0L && loaded.isBlank(),
                     editing = loaded.id == 0L,
                 )
             if (loaded.id == 0L && !loaded.isBlank()) edits.send(Unit)
+        }
+        viewModelScope.launch {
+            repository.observeCollections().collect { list ->
+                _uiState.update { it.copy(collections = list) }
+            }
         }
         viewModelScope.launch { edits.receiveAsFlow().debounce(SAVE_DELAY_MS).collect { save() } }
     }
@@ -101,6 +112,8 @@ class NoteEditorViewModel(
         if (_uiState.value.loading) return
         _uiState.update { it.copy(editing = editing, focusTitle = false) }
     }
+
+    fun setCollection(id: Long) = edit { it.copy(collectionId = id) }
 
     fun setColor(color: Int?) = edit { it.copy(color = color) }
 
@@ -137,6 +150,7 @@ class NoteEditorViewModel(
                     description = state.body,
                     categories = state.categories,
                     color = state.color,
+                    collectionId = state.collectionId,
                 )
             if (updated.id == 0L && updated.isBlank()) return@withLock
             if (updated.id != 0L && updated == base) return@withLock
@@ -147,6 +161,12 @@ class NoteEditorViewModel(
             entry = stored
             _uiState.update { it.copy(lastModified = stored.lastModified, saved = true) }
         }
+
+    private suspend fun initialCollection(requested: Long, defaultName: String): Long {
+        val all = repository.observeCollections().first()
+        return all.firstOrNull { it.id == requested }?.id
+            ?: repository.defaultCollection(defaultName).id
+    }
 
     private fun savedId(key: NoteEditor): Long? =
         key.id.takeIf { it != 0L } ?: savedStateHandle.get<Long>(KEY_ID)
