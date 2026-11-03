@@ -157,12 +157,9 @@ private fun EditorContent(
     Column(modifier = modifier) {
         val titleFocus = remember { FocusRequester() }
         val bodyFocus = remember { FocusRequester() }
-        var focusBody by remember { mutableStateOf(false) }
         if (state.editing) {
             LaunchedEffect(Unit) {
-                if (state.focusTitle) titleFocus.requestFocus()
-                if (focusBody) bodyFocus.requestFocus()
-                focusBody = false
+                if (state.focusTitle) titleFocus.requestFocus() else bodyFocus.requestFocus()
             }
             PlainField(
                 value = state.title,
@@ -185,10 +182,7 @@ private fun EditorContent(
                 modifier = Modifier.fillMaxWidth().focusRequester(bodyFocus).padding(bottom = 24.dp),
             )
         } else {
-            val startEditing = {
-                focusBody = true
-                viewModel.setEditing(true)
-            }
+            val startEditing = { viewModel.setEditing(true) }
             Column(
                 modifier =
                     Modifier.fillMaxWidth()
