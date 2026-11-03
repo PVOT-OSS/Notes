@@ -28,7 +28,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "Notes"
 
-include(":app")
+include(":notes")
 
 include(":core:model")
 
