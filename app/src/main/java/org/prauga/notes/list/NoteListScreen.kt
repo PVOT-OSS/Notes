@@ -18,19 +18,26 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -39,6 +46,7 @@ import com.prauga.pvot.designsystem.components.PvotCard
 import com.prauga.pvot.designsystem.components.PvotCardDefaults
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.button.PvotFab
+import com.prauga.pvot.designsystem.components.button.PvotIconButton
 import com.prauga.pvot.designsystem.components.textfield.PvotTextField
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.navigation.PvotTopBarAction
@@ -128,6 +136,9 @@ private fun NoteListContent(
                 )
             }
         }
+        if (!state.searching) {
+            item(span = StaggeredGridItemSpan.FullLine) { QuickAdd(onAdd = viewModel::quickAdd) }
+        }
         if (state.categories.isNotEmpty()) {
             item(span = StaggeredGridItemSpan.FullLine) {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -212,4 +223,38 @@ private fun NoteCard(note: Entry, onClick: () -> Unit) {
             }
         }
     }
+}
+
+@Composable
+private fun QuickAdd(onAdd: (String) -> Unit) {
+    var text by rememberSaveable { mutableStateOf("") }
+    val submit = {
+        onAdd(text)
+        text = ""
+    }
+    PvotTextField(
+        value = text,
+        onValueChange = { text = it },
+        placeholder = stringResource(R.string.quick_note),
+        singleLine = true,
+        keyboardOptions =
+            KeyboardOptions(
+                capitalization = KeyboardCapitalization.Sentences,
+                imeAction = ImeAction.Done,
+            ),
+        keyboardActions = KeyboardActions(onDone = { submit() }),
+        trailingIcon =
+            if (text.isNotBlank()) {
+                {
+                    PvotIconButton(
+                        icon = painterResource(R.drawable.ic_add),
+                        contentDescription = stringResource(R.string.add_note),
+                        onClick = submit,
+                    )
+                }
+            } else {
+                null
+            },
+        modifier = Modifier.fillMaxWidth(),
+    )
 }

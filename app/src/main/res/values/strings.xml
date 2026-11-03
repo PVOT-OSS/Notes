@@ -7,6 +7,8 @@
     <string name="app_name">Notes</string>
     <string name="default_collection">Notes</string>
     <string name="new_note">New note</string>
+    <string name="quick_note">Quick note</string>
+    <string name="add_note">Add note</string>
     <string name="search">Search</string>
     <string name="search_notes">Search notes</string>
     <string name="show_as_list">Show as list</string>

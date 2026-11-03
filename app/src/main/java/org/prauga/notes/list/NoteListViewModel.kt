@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.prauga.notes.NotesPreferences
 import org.prauga.notes.core.data.EntryFilter
 import org.prauga.notes.core.data.EntryRepository
@@ -45,6 +46,7 @@ private data class ListControls(
 class NoteListViewModel(
     private val repository: EntryRepository,
     private val preferences: NotesPreferences,
+    private val defaultCollectionName: String,
 ) : ViewModel() {
     private val controls = MutableStateFlow(ListControls(layout = preferences.layout))
 
@@ -70,6 +72,17 @@ class NoteListViewModel(
                 )
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), NoteListUiState())
+
+    fun quickAdd(text: String) {
+        val title = text.trim()
+        if (title.isEmpty()) return
+        viewModelScope.launch {
+            val collection = repository.defaultCollection(defaultCollectionName)
+            repository.save(
+                repository.newEntry(Component.VJOURNAL, collection.id).copy(summary = title)
+            )
+        }
+    }
 
     fun setQuery(query: String) = controls.update { it.copy(query = query) }
 
