@@ -18,6 +18,7 @@ import net.fortuna.ical4j.data.CalendarOutputter
 import net.fortuna.ical4j.model.Calendar
 import net.fortuna.ical4j.model.Component as ICalComponent
 import net.fortuna.ical4j.model.Parameter
+import net.fortuna.ical4j.model.ParameterList
 import net.fortuna.ical4j.model.Property
 import net.fortuna.ical4j.model.TextList
 import net.fortuna.ical4j.model.TimeZoneRegistryFactory
@@ -27,6 +28,7 @@ import net.fortuna.ical4j.model.component.VToDo
 import net.fortuna.ical4j.model.parameter.TzId
 import net.fortuna.ical4j.model.property.Categories
 import net.fortuna.ical4j.model.property.Clazz
+import net.fortuna.ical4j.model.property.Color
 import net.fortuna.ical4j.model.property.Completed
 import net.fortuna.ical4j.model.property.Created
 import net.fortuna.ical4j.model.property.DateProperty
@@ -50,6 +52,7 @@ import org.prauga.notes.core.model.Status
 
 object ICalMapper {
     const val PROD_ID = "-//PVOT-OSS//Notes//EN"
+    private const val COLOR = "COLOR"
 
     private val registry by lazy { TimeZoneRegistryFactory.getInstance().createRegistry() }
 
@@ -95,6 +98,7 @@ object ICalMapper {
                 if (entry.summary.isNotEmpty()) add(Summary(entry.summary))
                 if (entry.description.isNotEmpty()) add(Description(entry.description))
                 if (entry.categories.isNotEmpty()) add(Categories(TextList(entry.categories)))
+                entry.color?.let { add(Color(ParameterList(), Css3Colors.nearestName(it))) }
                 entry.start?.let { add(DtStart(it.toTemporal())) }
                 if (entry.component == Component.VTODO) {
                     entry.due?.let { add(Due(it.toTemporal())) }
@@ -137,6 +141,7 @@ object ICalMapper {
             created = component.instant(Property.CREATED) ?: stamp,
             lastModified = component.instant(Property.LAST_MODIFIED) ?: stamp,
             sequence = component.text(Property.SEQUENCE)?.toIntOrNull() ?: 0,
+            color = component.text(COLOR)?.let(Css3Colors::argb),
         )
     }
 

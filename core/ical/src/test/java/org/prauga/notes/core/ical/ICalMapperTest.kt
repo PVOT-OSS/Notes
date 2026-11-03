@@ -42,6 +42,7 @@ class ICalMapperTest {
                     description = "- milk\n- eggs, bread; butter",
                     categories = listOf("home", "shopping"),
                     classification = Classification.PRIVATE,
+                    color = 0xFFFF6347.toInt(),
                     sequence = 2,
                 )
         assertEquals(note, roundTrip(note))
@@ -121,5 +122,16 @@ class ICalMapperTest {
         assertEquals(listOf("work", "meetings", "q4"), entry.categories)
         assertEquals(7L, entry.collectionId)
         assertEquals(Instant.parse("2026-11-03T10:00:00Z"), entry.created)
+    }
+
+    @Test
+    fun writesColourAsNearestCss3NameAndReadsNames() {
+        val note = entry(Component.VJOURNAL).copy(summary = "x", color = 0xFFFE6448.toInt())
+        val text = ICalMapper.toICalendar(listOf(note))
+        assertTrue(text, text.contains("COLOR:tomato"))
+        assertEquals(0xFFFF6347.toInt(), ICalMapper.fromICalendar(text, 1).single().color)
+
+        val foreign = text.replace("COLOR:tomato", "COLOR:Not-A-Colour")
+        assertEquals(null, ICalMapper.fromICalendar(foreign, 1).single().color)
     }
 }

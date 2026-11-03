@@ -28,15 +28,18 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
+/**
+ * Each colour is a CSS3 keyword (tomato, orange, gold, …) so it survives iCalendar COLOR exactly.
+ */
 enum class NoteColor(val argb: Int, @StringRes val label: Int) {
-    RED(0xFFEF5350.toInt(), R.string.color_red),
-    ORANGE(0xFFFFA726.toInt(), R.string.color_orange),
-    YELLOW(0xFFFFEE58.toInt(), R.string.color_yellow),
-    GREEN(0xFF66BB6A.toInt(), R.string.color_green),
-    TEAL(0xFF26A69A.toInt(), R.string.color_teal),
-    BLUE(0xFF42A5F5.toInt(), R.string.color_blue),
-    PURPLE(0xFFAB47BC.toInt(), R.string.color_purple),
-    PINK(0xFFEC407A.toInt(), R.string.color_pink),
+    RED(0xFFFF6347.toInt(), R.string.color_red),
+    ORANGE(0xFFFFA500.toInt(), R.string.color_orange),
+    YELLOW(0xFFFFD700.toInt(), R.string.color_yellow),
+    GREEN(0xFF3CB371.toInt(), R.string.color_green),
+    TEAL(0xFF20B2AA.toInt(), R.string.color_teal),
+    BLUE(0xFF6495ED.toInt(), R.string.color_blue),
+    PURPLE(0xFFBA55D3.toInt(), R.string.color_purple),
+    PINK(0xFFFF69B4.toInt(), R.string.color_pink),
 }
 
 @Composable
