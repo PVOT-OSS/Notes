@@ -52,6 +52,7 @@ import com.prauga.pvot.designsystem.components.PvotDialogActionStyle
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.navigation.PvotTopBar
 import com.prauga.pvot.designsystem.navigation.PvotTopBarAction
+import org.prauga.notes.NoteColorRow
 import org.prauga.notes.R
 import org.prauga.notes.core.ui.markdown.MarkdownText
 
@@ -225,6 +226,11 @@ private fun EditorContent(
                 )
             }
         }
+        NoteColorRow(
+            selected = state.color,
+            onSelect = viewModel::setColor,
+            modifier = Modifier.padding(top = 12.dp, bottom = 4.dp),
+        )
         var newTag by rememberSaveable { mutableStateOf("") }
         PlainField(
             value = newTag,

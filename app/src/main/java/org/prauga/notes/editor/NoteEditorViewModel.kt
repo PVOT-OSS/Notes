@@ -30,6 +30,7 @@ data class NoteEditorUiState(
     val title: String = "",
     val body: String = "",
     val categories: List<String> = emptyList(),
+    val color: Int? = null,
     val lastModified: Instant? = null,
     val saved: Boolean = false,
     val focusTitle: Boolean = false,
@@ -70,6 +71,7 @@ class NoteEditorViewModel(
                     title = loaded.summary,
                     body = loaded.description,
                     categories = loaded.categories,
+                    color = loaded.color,
                     lastModified = loaded.lastModified.takeIf { loaded.id != 0L },
                     saved = loaded.id != 0L,
                     focusTitle = loaded.id == 0L && loaded.isBlank(),
@@ -99,6 +101,8 @@ class NoteEditorViewModel(
         if (_uiState.value.loading) return
         _uiState.update { it.copy(editing = editing, focusTitle = false) }
     }
+
+    fun setColor(color: Int?) = edit { it.copy(color = color) }
 
     fun removeCategory(category: String) = edit { it.copy(categories = it.categories - category) }
 
@@ -132,6 +136,7 @@ class NoteEditorViewModel(
                     summary = state.title.trim(),
                     description = state.body,
                     categories = state.categories,
+                    color = state.color,
                 )
             if (updated.id == 0L && updated.isBlank()) return@withLock
             if (updated.id != 0L && updated == base) return@withLock

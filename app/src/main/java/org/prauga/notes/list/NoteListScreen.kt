@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prauga.pvot.coreui.PvotEmptyContent
 import com.prauga.pvot.designsystem.components.PvotCard
+import com.prauga.pvot.designsystem.components.PvotCardDefaults
 import com.prauga.pvot.designsystem.components.PvotScreenScaffold
 import com.prauga.pvot.designsystem.components.button.PvotFab
 import com.prauga.pvot.designsystem.components.textfield.PvotTextField
@@ -44,6 +45,7 @@ import com.prauga.pvot.designsystem.navigation.PvotTopBarAction
 import org.prauga.notes.R
 import org.prauga.notes.core.model.Entry
 import org.prauga.notes.core.ui.markdown.MarkdownText
+import org.prauga.notes.noteContainerColor
 
 @Composable
 fun NoteListScreen(
@@ -171,7 +173,13 @@ private fun NoteListContent(
 
 @Composable
 private fun NoteCard(note: Entry, onClick: () -> Unit) {
-    PvotCard(onClick = onClick, modifier = Modifier.fillMaxWidth()) {
+    PvotCard(
+        onClick = onClick,
+        colors =
+            note.color?.let { PvotCardDefaults.colors(containerColor = noteContainerColor(it)) }
+                ?: PvotCardDefaults.colors(),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             if (note.summary.isNotBlank()) {
                 Text(
