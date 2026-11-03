@@ -4,6 +4,7 @@
 package org.prauga.notes
 
 import android.content.Context
+import androidx.core.content.edit
 import org.prauga.notes.list.NoteLayout
 
 class NotesPreferences(context: Context) {
@@ -14,7 +15,7 @@ class NotesPreferences(context: Context) {
             prefs.getString(KEY_LAYOUT, null)?.let {
                 runCatching { NoteLayout.valueOf(it) }.getOrNull()
             } ?: NoteLayout.GRID
-        set(value) = prefs.edit().putString(KEY_LAYOUT, value.name).apply()
+        set(value) = prefs.edit { putString(KEY_LAYOUT, value.name) }
 
     private companion object {
         const val KEY_LAYOUT = "layout"

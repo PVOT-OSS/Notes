@@ -283,7 +283,7 @@ private fun PlainField(
     onValueChange: (String) -> Unit,
     placeholder: String,
     style: TextStyle,
-    modifier: Modifier = Modifier.fillMaxWidth(),
+    modifier: Modifier = Modifier,
     singleLine: Boolean = false,
     capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
     imeAction: ImeAction = ImeAction.Default,

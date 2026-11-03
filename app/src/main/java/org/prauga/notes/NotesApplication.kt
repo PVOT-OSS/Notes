@@ -16,7 +16,7 @@ class NotesApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         val newNote =
-            ShortcutInfo.Builder(this, "new_note")
+            ShortcutInfo.Builder(this, SHORTCUT_NEW_NOTE)
                 .setShortLabel(getString(R.string.new_note))
                 .setIcon(Icon.createWithResource(this, R.drawable.ic_shortcut_new_note))
                 .setIntent(
@@ -24,6 +24,10 @@ class NotesApplication : Application() {
                 )
                 .build()
         getSystemService(ShortcutManager::class.java)?.dynamicShortcuts = listOf(newNote)
+    }
+
+    companion object {
+        const val SHORTCUT_NEW_NOTE = "new_note"
     }
 }
 

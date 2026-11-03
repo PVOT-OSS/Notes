@@ -4,6 +4,7 @@
 package org.prauga.notes
 
 import android.content.Intent
+import android.content.pm.ShortcutManager
 import android.os.Bundle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,7 +32,11 @@ class MainActivity : PvotBaseActivity() {
 
     private fun Intent.toEditorRequest(): NoteEditor? =
         when (action) {
-            ACTION_NEW_NOTE -> NoteEditor()
+            ACTION_NEW_NOTE -> {
+                getSystemService(ShortcutManager::class.java)
+                    ?.reportShortcutUsed(NotesApplication.SHORTCUT_NEW_NOTE)
+                NoteEditor()
+            }
             Intent.ACTION_SEND ->
                 NoteEditor(
                     title = getStringExtra(Intent.EXTRA_SUBJECT).orEmpty(),
