@@ -49,7 +49,8 @@ fun NotesNavigation(request: NoteEditor?, onRequestHandled: () -> Unit) {
             entryProvider {
                 entry<NoteList> {
                     NoteListScreen(
-                        viewModel = viewModel { NoteListViewModel(repository) },
+                        viewModel =
+                            viewModel { NoteListViewModel(repository, container.preferences) },
                         onOpenNote = { backStack.add(NoteEditor(id = it)) },
                         onNewNote = { backStack.add(NoteEditor()) },
                     )

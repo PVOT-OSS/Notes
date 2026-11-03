@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import org.prauga.notes.NotesPreferences
 import org.prauga.notes.core.data.EntryFilter
 import org.prauga.notes.core.data.EntryRepository
 import org.prauga.notes.core.model.Component
@@ -41,8 +42,11 @@ private data class ListControls(
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class NoteListViewModel(private val repository: EntryRepository) : ViewModel() {
-    private val controls = MutableStateFlow(ListControls())
+class NoteListViewModel(
+    private val repository: EntryRepository,
+    private val preferences: NotesPreferences,
+) : ViewModel() {
+    private val controls = MutableStateFlow(ListControls(layout = preferences.layout))
 
     val uiState: StateFlow<NoteListUiState> =
         combine(
@@ -76,6 +80,8 @@ class NoteListViewModel(private val repository: EntryRepository) : ViewModel() {
 
     fun toggleLayout() =
         controls.update {
-            it.copy(layout = if (it.layout == NoteLayout.GRID) NoteLayout.LIST else NoteLayout.GRID)
+            val layout = if (it.layout == NoteLayout.GRID) NoteLayout.LIST else NoteLayout.GRID
+            preferences.layout = layout
+            it.copy(layout = layout)
         }
 }

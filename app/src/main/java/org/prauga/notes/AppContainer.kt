@@ -11,6 +11,7 @@ import org.prauga.notes.core.data.EntryRepository
 
 class AppContainer(context: Context) {
     val applicationScope = CoroutineScope(SupervisorJob())
+    val preferences = NotesPreferences(context)
     val defaultCollectionName: String = context.getString(R.string.default_collection)
     val repository: EntryRepository by lazy {
         EntryRepository(EntryDatabase.create(context, "notes.db"))
