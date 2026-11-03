@@ -89,3 +89,5 @@ data class EntryWithCategories(
 )
 
 data class CategoryCount(val name: String, val count: Int)
+
+data class CollectionCount(val id: Long, val name: String, val color: Int?, val count: Int)

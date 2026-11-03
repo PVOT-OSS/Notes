@@ -44,6 +44,9 @@ class EntryRepository(
     fun observeCollections(): Flow<List<EntryCollection>> =
         collections.observeAll().map { list -> list.map { it.toModel() } }
 
+    fun observeCollectionCounts(component: Component): Flow<List<CollectionCount>> =
+        collections.observeWithCounts(component.name)
+
     suspend fun defaultCollection(defaultName: String): EntryCollection =
         collections.first()?.toModel()
             ?: EntryCollection(name = defaultName).let {

@@ -17,6 +17,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.prauga.notes.core.model.Component
+import org.prauga.notes.core.model.EntryCollection
 import org.prauga.notes.core.model.EntryTime
 
 @RunWith(AndroidJUnit4::class)
@@ -109,5 +110,30 @@ class EntryRepositoryTest {
             )
         repository.deleteCollection(collection.id)
         assertNull(repository.getEntry(id))
+    }
+
+    @Test
+    fun countsEntriesPerCollection() = runTest {
+        val first = repository.defaultCollection("Notes")
+        val second = repository.saveCollection(EntryCollection(name = "Work"))
+        repository.save(repository.newEntry(Component.VJOURNAL, first.id).copy(summary = "a"))
+        repository.save(repository.newEntry(Component.VJOURNAL, second).copy(summary = "b"))
+        repository.save(repository.newEntry(Component.VJOURNAL, second).copy(summary = "c"))
+        repository.save(repository.newEntry(Component.VTODO, second).copy(summary = "task"))
+        assertEquals(
+            listOf(
+                CollectionCount(first.id, "Notes", null, 1),
+                CollectionCount(second, "Work", null, 2),
+            ),
+            repository.observeCollectionCounts(Component.VJOURNAL).first(),
+        )
+        assertEquals(
+            listOf("b", "c"),
+            repository
+                .observeEntries(Component.VJOURNAL, EntryFilter(collectionId = second))
+                .first()
+                .map { it.summary }
+                .sorted(),
+        )
     }
 }
