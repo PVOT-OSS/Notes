@@ -41,9 +41,11 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.prauga.pvot.designsystem.components.PvotDialog
@@ -289,6 +291,36 @@ private fun PlainField(
     imeAction: ImeAction = ImeAction.Default,
     onImeAction: () -> Unit = {},
 ) {
+    var field by remember { mutableStateOf(TextFieldValue(value, TextRange(value.length))) }
+    val current = if (field.text == value) field else TextFieldValue(value, TextRange(value.length))
+    PlainField(
+        value = current,
+        onValueChange = {
+            field = it
+            if (it.text != value) onValueChange(it.text)
+        },
+        placeholder = placeholder,
+        style = style,
+        modifier = modifier,
+        singleLine = singleLine,
+        capitalization = capitalization,
+        imeAction = imeAction,
+        onImeAction = onImeAction,
+    )
+}
+
+@Composable
+private fun PlainField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    placeholder: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier,
+    singleLine: Boolean = false,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.Sentences,
+    imeAction: ImeAction = ImeAction.Default,
+    onImeAction: () -> Unit = {},
+) {
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -304,7 +336,7 @@ private fun PlainField(
         keyboardActions = KeyboardActions(onAny = { onImeAction() }),
         modifier = modifier,
         decorationBox = { inner ->
-            if (value.isEmpty()) {
+            if (value.text.isEmpty()) {
                 Text(
                     placeholder,
                     style =
