@@ -36,4 +36,6 @@ include(":core:ical")
 
 include(":core:data")
 
+include(":core:ui")
+
 includeBuild("PvotLib")
